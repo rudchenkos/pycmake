@@ -28,6 +28,8 @@ class Lexer:
 
             if len(c) == 0:
                 token = Token('EOF')
+            elif c == '#':
+                self.skipComment()
             elif c.isspace():
                 continue;
             elif c in '()':
@@ -46,6 +48,11 @@ class Lexer:
         if c in '()':
             return False
         return not c.isspace()
+
+    def skipComment(self):
+        c = ''
+        while c != '\n' and c != 'EOF':
+            c = self.getChar()
 
     def getString(self):
         value = ''
