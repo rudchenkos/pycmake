@@ -8,3 +8,9 @@ class MakefileContext:
 
     def getVariable(self, varName):
         return self.makefile.getVariable(varName)
+
+    def addTarget(self, target):
+        self.makefile.addTarget(target)
+
+    def lookupTarget(self, targetName):
+        return self.makefile.lookupTarget(targetName)

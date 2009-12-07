@@ -1,5 +1,6 @@
 from lexer import Lexer
 from ..makefile import Makefile
+from ..target import Target
 
 class ParserError(Exception):
     def __init__(self, message):
@@ -21,10 +22,18 @@ def cmd_set(context, cmd_args):
         value = cmd_args[1]
     context.setVariable(cmd_args[0], value)
 
-def cmd_message(makefile, cmd_args):
+def cmd_message(context, cmd_args):
     for arg in cmd_args:
         print arg,
     print
+
+def cmd_add_executable(context, cmd_args):
+    if not cmd_args:
+        raise LanguageError('The "add_executable" command needs at least one argument')
+    target = Target(cmd_args[0], 'EXECUTABLE')
+    for src in cmd_args[1:]:
+        target.addSource(src)
+    context.addTarget(target)
 
 def run_cmd(makefile, cmd_name, cmd_args):
     cmd_name = cmd_name.lower()
@@ -32,6 +41,8 @@ def run_cmd(makefile, cmd_name, cmd_args):
         cmd_set(makefile, cmd_args)
     elif cmd_name == 'message':
         cmd_message(makefile, cmd_args)
+    elif cmd_name == 'add_executable':
+        cmd_add_executable(makefile, cmd_args)
     else:
         raise LanguageError('Unknown command: ' + cmd_name)
 
