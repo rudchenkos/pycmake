@@ -13,13 +13,13 @@ class LanguageError(Exception):
     def __str__(self):
         return self.message
 
-def cmd_set(makefile, cmd_args):
+def cmd_set(context, cmd_args):
     if not cmd_args:
         raise LanguageError('The "set" command needs at least one argument')
     value = ''
     if len(cmd_args) > 1:
         value = cmd_args[1]
-    makefile.setVariable(cmd_args[0], value)
+    context.setVariable(cmd_args[0], value)
 
 def cmd_message(makefile, cmd_args):
     for arg in cmd_args:
@@ -35,11 +35,10 @@ def run_cmd(makefile, cmd_name, cmd_args):
     else:
         raise LanguageError('Unknown command: ' + cmd_name)
 
-def parse(filename):
+def parse(filename, context):
     file = open(filename, 'r')
 
-    makefile = Makefile()
-    lexer = Lexer(file, makefile)
+    lexer = Lexer(file, context)
     token = lexer.getToken()
 
     try:
@@ -59,7 +58,7 @@ def parse(filename):
                 cmd_args.append(token.value)
                 token = lexer.getToken()
 
-            run_cmd(makefile, cmd_name, cmd_args)
+            run_cmd(context, cmd_name, cmd_args)
             token = lexer.getToken()
     finally:
         file.close()
