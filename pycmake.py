@@ -2,7 +2,7 @@
 import os
 import sys
 
-from cmake.lang.parser import parse
+from cmake.lang.parser import parse,LanguageError
 from cmake.lang.context import MakefileContext
 from cmake.makefile import Makefile
 from cmake.cache import CacheManager
@@ -18,5 +18,8 @@ cache = CacheManager()
 cache.load('.')
 context = MakefileContext(makefile=mk, cache=cache)
 
-parse(os.path.join(srcdir, 'CMakeLists.txt'), context)
+try:
+    parse(os.path.join(srcdir, 'CMakeLists.txt'), context)
+except LanguageError as e:
+    print e.getFile() + ':' + str(e.getLine()) + ': error:',e
 

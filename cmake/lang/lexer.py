@@ -1,13 +1,20 @@
+from error import InvalidCharacterError, UnexpectedTokenError
+
 class Token:
     def __init__(self, type, value=''):
         self.type = type
         self.value = value
+
+class EOFToken(Token):
+    def __init__(self):
+        Token.__init__(self, 'EOF', 'EOF')
 
 class Lexer:
     def __init__(self, file, variableProvider=None):
         self.buffer = ''
         self.file = file
         self.variableProvider = variableProvider
+        self.line = 1
 
     def getChar(self):
         if len(self.buffer) > 0:
@@ -15,6 +22,8 @@ class Lexer:
             self.buffer = self.buffer[1:]
         else:
             result = self.file.read(1)
+            if result == '\n':
+                self.line += 1
         return result
 
     def putBack(self, str):
@@ -27,7 +36,7 @@ class Lexer:
             c = self.getChar()
 
             if len(c) == 0:
-                token = Token('EOF')
+                token = EOFToken()
             elif c == '#':
                 self.skipComment()
             elif c.isspace():
@@ -40,7 +49,7 @@ class Lexer:
                 self.putBack(c)
                 token = self.getString()
             else:
-                print "Invalid token: " + c
+                raise InvalidCharacterError(c, line=self.getLine())
         return token
 
     @staticmethod
@@ -63,7 +72,10 @@ class Lexer:
             c = self.getChar()
 
             if len(c) == 0:
-                token = Token('STRING', value)
+                if (quoted):
+                    raise UnexpectedTokenError(EOFToken().value, '"', line=self.getLine())
+                else:
+                    token = Token('STRING', value)
             elif c == '"':
                 if len(value) == 0:
                     quoted = True
@@ -98,3 +110,5 @@ class Lexer:
             else:
                 return
 
+    def getLine(self):
+        return self.line

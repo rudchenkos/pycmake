@@ -1,22 +1,10 @@
 from lexer import Lexer
-from ..makefile import Makefile
 from ..target import Target
-
-class ParserError(Exception):
-    def __init__(self, message):
-        self.message = message
-    def __str__(self):
-        return self.message
-
-class LanguageError(Exception):
-    def __init__(self, message):
-        self.message = message
-    def __str__(self):
-        return self.message
+from error import *
 
 def cmd_set(context, cmd_args):
     if not cmd_args:
-        raise LanguageError('The "set" command needs at least one argument')
+        raise InsufficientArgumentError('set')
     value = ''
     if len(cmd_args) > 1:
         value = cmd_args[1]
@@ -29,7 +17,7 @@ def cmd_message(context, cmd_args):
 
 def cmd_add_executable(context, cmd_args):
     if not cmd_args:
-        raise LanguageError('The "add_executable" command needs at least one argument')
+        raise InsufficientArgumentError('add_executable')
     target = Target(cmd_args[0], 'EXECUTABLE')
     for src in cmd_args[1:]:
         target.addSource(src)
@@ -44,32 +32,38 @@ def run_cmd(makefile, cmd_name, cmd_args):
     elif cmd_name == 'add_executable':
         cmd_add_executable(makefile, cmd_args)
     else:
-        raise LanguageError('Unknown command: ' + cmd_name)
+        raise UnknownCommandError(cmd_name)
 
 def parse(filename, context):
     file = open(filename, 'r')
 
-    lexer = Lexer(file, context)
-    token = lexer.getToken()
-
     try:
+        lexer = Lexer(file, context)
+        token = lexer.getToken()
+
         while token.type != 'EOF':
             if token.type != 'STRING':
-                raise ParserError('command name was expected')
+                raise UnexpectedTokenError(token.value, 'STRING', 'STRING', line=lexer.getLine())
+
             cmd_name = token.value
             token = lexer.getToken()
             if token.type != '(':
-                raise ParserError('\'(\' was expected')
+                raise UnexpectedTokenError(token.value, '(', 'STRING', line=lexer.getLine())
 
             cmd_args = []
             token = lexer.getToken()
             while token.type != ')':
                 if token.type != 'STRING':
-                    raise ParserError('string was expected')
+                    raise UnexpectedTokenError(token.value, 'STRING', line=lexer.getLine())
                 cmd_args.append(token.value)
                 token = lexer.getToken()
 
             run_cmd(context, cmd_name, cmd_args)
             token = lexer.getToken()
+    except LanguageError as e:
+        # set the appropriate filename and line number and re-raise
+        e.setLine(lexer.getLine())
+        e.setFile(filename)
+        raise e
     finally:
         file.close()
