@@ -14,12 +14,11 @@ if len(sys.argv) < 2:
 srcdir = sys.argv[1]
 
 mk = Makefile()
-cache = CacheManager()
-cache.load('.')
+cache = CacheManager('.')
 context = MakefileContext(makefile=mk, cache=cache)
 
 try:
     parse(os.path.join(srcdir, 'CMakeLists.txt'), context)
+    cache.save()
 except LanguageError as e:
     print e.getFile() + ':' + str(e.getLine()) + ': error:',e
-
