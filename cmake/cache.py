@@ -33,7 +33,7 @@ class CacheManager:
 
     def setVariable(self, varName, varValue, type='STRING', force=False):
         if not force and not self.hasVariable(varName):
-            if notVarValue:
+            if not varValue:
                 try:
                     del self.entries
                 except KeyError:

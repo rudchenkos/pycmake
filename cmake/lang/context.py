@@ -21,10 +21,23 @@ class MakefileContext:
     def cmd_set(self, cmd_args):
         if not cmd_args:
             raise InsufficientArgumentError('set')
+        name = cmd_args[0]
         value = ''
         if len(cmd_args) > 1:
             value = cmd_args[1]
-        self.makefile.setVariable(cmd_args[0], value)
+
+        cache = False
+        type = 'STRING'
+        if len(cmd_args) > 2:
+            if cmd_args[2] == "CACHE":
+                cache = True
+                if len(cmd_args) > 3:
+                    type = cmd_args[3]
+
+        if cache:
+            self.makefile.getCMake().getCache().setVariable(name, value, type=type)
+        else:
+            self.makefile.setVariable(name, value)
 
     def cmd_message(self, cmd_args):
         for arg in cmd_args:
