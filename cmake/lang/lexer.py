@@ -39,7 +39,7 @@ class Lexer:
                 token = EOFToken()
             elif c == '#':
                 self.skipComment()
-            elif c.isspace():
+            elif c.isspace() or c == ';':
                 continue;
             elif c in '()':
                 token = Token(c)
@@ -54,7 +54,7 @@ class Lexer:
 
     @staticmethod
     def isStringChar(c):
-        if c in '()':
+        if c in '();':
             return False
         return not c.isspace()
 
