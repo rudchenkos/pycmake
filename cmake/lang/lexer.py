@@ -105,7 +105,7 @@ class Lexer:
                 varValue = self.variableProvider.getVariable(varName)
                 self.putBack(varValue)
                 break
-            elif c.isalnum():
+            elif c.isalnum() or c == '_':
                 varName = varName + c
             else:
                 return
