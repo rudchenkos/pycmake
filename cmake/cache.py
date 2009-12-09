@@ -28,16 +28,25 @@ class CacheManager:
         self.file = os.path.join(dir, "CMakeCache.txt")
         self.reload()
 
+    def hasVariable(self, varName):
+        return varName in self.entries
+
     def setVariable(self, varName, varValue, type='STRING', force=False):
-        if not force and not varName in self.entries:
-            entry = CacheEntry()
-            entry.value = varValue
-            entry.type = type
-            self.entries[varName] = entry
+        if not force and not self.hasVariable(varName):
+            if notVarValue:
+                try:
+                    del self.entries
+                except KeyError:
+                    pass
+            else:
+                entry = CacheEntry()
+                entry.value = varValue
+                entry.type = type
+                self.entries[varName] = entry
 
     def getVariable(self, varName):
         try:
-            return self.entries[varName];
+            return self.entries[varName].value;
         except KeyError:
             return ''
 

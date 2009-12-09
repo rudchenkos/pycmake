@@ -2,9 +2,8 @@ from error import *
 from ..target import Target
 
 class MakefileContext:
-    def __init__(self, makefile, cache):
+    def __init__(self, makefile):
         self.makefile = makefile
-        self.cache = cache
 
     def getVariable(self, varName):
         return self.makefile.getVariable(varName)

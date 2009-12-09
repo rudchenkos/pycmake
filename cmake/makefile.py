@@ -1,10 +1,17 @@
 
 class Makefile:
-    def __init__(self):
+    def __init__(self, cmake):
+        self.cmake = cmake
         self.variables = {}
         self.targets = []
 
+    def getCMake(self):
+        return self.cmake
+
     def setVariable(self, varName, varValue):
+        if self.cmake.getCache().hasVariable(varName):
+            return;
+
         if not varValue:
             try:
                 del self.variables[varName]
@@ -14,6 +21,9 @@ class Makefile:
             self.variables[varName] = varValue
 
     def getVariable(self, varName):
+        if self.cmake.getCache().hasVariable(varName):
+            return self.cmake.getCache().getVariable(varName)
+
         try:
             return self.variables[varName]
         except KeyError:
