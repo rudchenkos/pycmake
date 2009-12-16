@@ -1,16 +1,20 @@
 from error import *
 from ..target import Target
+from argparser import matchParameters
 
 class MakefileContext:
+    """CMake Makefile object builder"""
     def __init__(self, makefile):
         self.makefile = makefile
 
     def getVariable(self, varName):
         return self.makefile.getVariable(varName)
 
-    # Command dispatcher
     def run_cmd(self, cmd_name, cmd_args):
-        # find the appropriate "cmd_" method in the self object
+        """
+        Command dispatcher
+        Find the appropriate "cmd_" method in the self object and call it
+        """
         for member in self.__class__.__dict__.keys():
             if member == 'cmd_' + cmd_name:
                 return self.__class__.__dict__[member](self, cmd_args)
@@ -19,25 +23,15 @@ class MakefileContext:
     # Commands
 
     def cmd_set(self, cmd_args):
-        if not cmd_args:
-            raise InsufficientArgumentError('set')
-        name = cmd_args[0]
-        value = ''
-        if len(cmd_args) > 1:
-            value = cmd_args[1]
-
-        cache = False
-        type = 'STRING'
-        if len(cmd_args) > 2:
-            if cmd_args[2] == "CACHE":
-                cache = True
-                if len(cmd_args) > 3:
-                    type = cmd_args[3]
-
-        if cache:
-            self.makefile.getCMake().getCache().setVariable(name, value, type=type)
+        args = matchParameters('name value [CACHE type]', cmd_args)
+        if 'CACHE' in args:
+            try:
+                type = args['type']
+            except KeyError:
+                type = 'STRING'
+            self.makefile.getCMake().getCache().setVariable(args['name'], args['value'], type=type)
         else:
-            self.makefile.setVariable(name, value)
+            self.makefile.setVariable(args['name'], args['value'])
 
     def cmd_message(self, cmd_args):
         for arg in cmd_args:
